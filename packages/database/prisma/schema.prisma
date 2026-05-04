@@ -1,0 +1,183 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  username     String   @unique
+  firebaseUid  String   @unique
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  userRoles    UserRole[]
+  clientUsers  ClientUser[]
+  submissions  Submission[]
+  progress     Progress[]
+  discussions  Discussion[]
+  comments     Comment[]
+  bookmarks    Bookmark[]
+  notes        Note[]
+}
+
+model Role {
+  id        String     @id @default(uuid())
+  name      String     @unique // STUDENT, INSTRUCTOR, CLIENT_ADMIN, PLATFORM_ADMIN
+  userRoles UserRole[]
+}
+
+model UserRole {
+  userId String
+  roleId String
+
+  user User @relation(fields: [userId], references: [id])
+  role Role @relation(fields: [roleId], references: [id])
+
+  @@id([userId, roleId])
+}
+
+model Client {
+  id        String       @id @default(uuid())
+  name      String
+  domain    String?
+  createdAt DateTime     @default(now())
+  users     ClientUser[]
+}
+
+model ClientUser {
+  clientId String
+  userId   String
+  groupId  String?
+
+  client Client @relation(fields: [clientId], references: [id])
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@id([clientId, userId])
+}
+
+model Pattern {
+  id            String   @id @default(uuid())
+  name          String   @unique
+  description   String
+  difficulty    String
+  orderIndex    Int      // 1-indexed order of the pattern
+  totalProblems Int      @default(0)
+  
+  problems      Problem[]
+  progress      Progress[]
+}
+
+model Problem {
+  id          String   @id @default(uuid())
+  title       String
+  slug        String   @unique
+  description String
+  difficulty  String   // EASY, MEDIUM, HARD
+  timeLimit   Int      // in milliseconds
+  spaceLimit  Int      // in megabytes
+  patternId   String
+  
+  pattern     Pattern  @relation(fields: [patternId], references: [id])
+  testCases   TestCase[]
+  submissions Submission[]
+  discussions Discussion[]
+  bookmarks   Bookmark[]
+  notes       Note[]
+}
+
+model TestCase {
+  id             String  @id @default(uuid())
+  problemId      String
+  input          String
+  expectedOutput String
+  isHidden       Boolean @default(true)
+
+  problem        Problem @relation(fields: [problemId], references: [id])
+}
+
+model Submission {
+  id            String   @id @default(uuid())
+  userId        String
+  problemId     String
+  language      String
+  code          String
+  status        String   // PENDING, ACCEPTED, WRONG_ANSWER, TIME_LIMIT_EXCEEDED, RUNTIME_ERROR, COMPILE_ERROR
+  executionTime Int?
+  memoryUsed    Int?
+  createdAt     DateTime @default(now())
+
+  user          User     @relation(fields: [userId], references: [id])
+  problem       Problem  @relation(fields: [problemId], references: [id])
+}
+
+model Progress {
+  id                String  @id @default(uuid())
+  userId            String
+  patternId         String
+  completedProblems Int     @default(0)
+  totalProblems     Int     @default(0)
+  isCompleted       Boolean @default(false)
+  unlocked          Boolean @default(false)
+
+  user              User    @relation(fields: [userId], references: [id])
+  pattern           Pattern @relation(fields: [patternId], references: [id])
+
+  @@unique([userId, patternId])
+}
+
+model Discussion {
+  id        String   @id @default(uuid())
+  userId    String
+  problemId String
+  title     String
+  content   String
+  upvotes   Int      @default(0)
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id])
+  problem   Problem  @relation(fields: [problemId], references: [id])
+  comments  Comment[]
+}
+
+model Comment {
+  id           String   @id @default(uuid())
+  discussionId String
+  userId       String
+  content      String
+  upvotes      Int      @default(0)
+  createdAt    DateTime @default(now())
+
+  discussion   Discussion @relation(fields: [discussionId], references: [id])
+  user         User       @relation(fields: [userId], references: [id])
+}
+
+model Bookmark {
+  id        String   @id @default(uuid())
+  userId    String
+  problemId String
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id])
+  problem   Problem  @relation(fields: [problemId], references: [id])
+
+  @@unique([userId, problemId])
+}
+
+model Note {
+  id        String   @id @default(uuid())
+  userId    String
+  problemId String
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user      User     @relation(fields: [userId], references: [id])
+  problem   Problem  @relation(fields: [problemId], references: [id])
+
+  @@unique([userId, problemId])
+}

@@ -1,0 +1,21 @@
+{
+  "name": "dsa-platform",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspaces --if-present",
+    "prisma:generate": "npx prisma generate --schema=packages/database/prisma/schema.prisma",
+    "postinstall": "npm run prisma:generate",
+    "build": "npm run prisma:generate && npm run build -w packages/database && npm run build --workspaces --if-present",
+    "start": "npm run start --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present"
+  },
+  "devDependencies": {
+    "tsx": "^4.21.0",
+    "typescript": "^5.0.0"
+  }
+}

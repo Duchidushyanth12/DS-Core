@@ -1,0 +1,47 @@
+databases:
+  - name: dsc-db
+    plan: free
+    region: oregon
+    databaseName: dscplatform
+
+services:
+  - type: web
+    name: dsc-api
+    runtime: node
+    plan: free
+    region: oregon
+    rootDir: .
+    buildCommand: npm install && npm run build -w packages/database && npm run build -w apps/api
+    startCommand: node apps/api/src/index.js
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: DATABASE_URL
+        fromDatabase:
+          name: dsc-db
+          property: connectionString
+      - key: EXECUTION_ENGINE_URL
+        fromService:
+          name: dsc-execution-engine
+          type: web
+          property: hostport
+      - key: ALLOWED_ORIGIN
+        sync: false
+
+  - type: web
+    name: dsc-execution-engine
+    runtime: node
+    plan: free
+    region: oregon
+    rootDir: .
+    buildCommand: npm install && npm run build -w apps/execution-engine
+    startCommand: node apps/execution-engine/src/index.js
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
