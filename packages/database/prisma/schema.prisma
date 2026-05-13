@@ -3,8 +3,8 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider = "sqlite"
+  url      = "file:./dev.db"
 }
 
 model User {
@@ -12,6 +12,10 @@ model User {
   email        String   @unique
   username     String   @unique
   firebaseUid  String   @unique
+  photoURL     String?
+  bio          String?
+  githubUrl    String?
+  linkedinUrl  String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 

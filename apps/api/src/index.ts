@@ -31,12 +31,14 @@ import { patternsRouter } from './routes/patterns.js';
 import { submissionsRouter } from './routes/submissions.js';
 import { authRouter } from './routes/auth.js';
 import { leaderboardRouter } from './routes/leaderboard.js';
+import { profileRouter } from './routes/profile.js';
 
 app.use('/api/problems', problemsRouter);
 app.use('/api/patterns', patternsRouter);
 app.use('/api/submissions', submissionsRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/leaderboard', leaderboardRouter);
+app.use('/api/profile', profileRouter);
 
 
 app.listen(port, () => {

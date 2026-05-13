@@ -71,9 +71,17 @@ export default function Header() {
             >
               <LogOut className="w-5 h-5" />
             </button>
-            <div className="w-10 h-10 rounded-full bg-primary/20 border border-primary/40 flex items-center justify-center text-primary font-bold">
-              {user.displayName?.charAt(0) || user.email?.charAt(0).toUpperCase() || 'U'}
-            </div>
+            <Link 
+              href="/profile"
+              className="w-10 h-10 rounded-full bg-primary/20 border border-primary/40 flex items-center justify-center text-primary font-bold hover:ring-2 hover:ring-primary/40 transition-all cursor-pointer overflow-hidden"
+              title="View Profile"
+            >
+              {user.photoURL ? (
+                <img src={user.photoURL} alt="Profile" className="w-full h-full object-cover" />
+              ) : (
+                user.displayName?.charAt(0) || user.email?.charAt(0).toUpperCase() || 'U'
+              )}
+            </Link>
           </div>
         ) : (
           <div className="flex items-center gap-4">
