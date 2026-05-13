@@ -22,7 +22,7 @@ export default function Header() {
     signOut(auth);
   };
 
-  if (pathname === '/login' || pathname === '/signup') return null;
+  if (pathname === '/login' || pathname === '/signup' || pathname.startsWith('/problems/')) return null;
 
   const navLinks = [
     { name: 'Problems', href: '/problems' },

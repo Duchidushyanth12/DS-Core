@@ -37,6 +37,7 @@ export default function ProblemSolvingPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
+  const [user, setUser] = useState<any>(null);
 
   const DEFAULT_BOILERPLATE: Record<string, string> = {
     javascript: `function solution() {\n  // Your code here\n  console.log("Hello World");\n}`,
@@ -46,8 +47,9 @@ export default function ProblemSolvingPage() {
   };
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUserId(user ? user.uid : null);
+    const unsubscribe = onAuthStateChanged(auth, (authUser) => {
+      setUserId(authUser ? authUser.uid : null);
+      setUser(authUser);
     });
     return () => unsubscribe();
   }, []);
@@ -136,6 +138,11 @@ export default function ProblemSolvingPage() {
   };
 
   const handleSubmit = async () => {
+    if (!user) {
+      alert("Please sign in to submit your solution.");
+      router.push('/login');
+      return;
+    }
     await handleRunCode();
   };
 
@@ -172,22 +179,39 @@ export default function ProblemSolvingPage() {
           <div className="h-4 w-px bg-border" />
           <h1 className="font-semibold text-sm">{problem.title}</h1>
         </div>
-        <div className="flex items-center gap-3">
-          <button 
-            onClick={handleRunCode}
-            disabled={isExecuting}
-            className="flex items-center gap-2 px-4 py-1.5 rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/80 text-sm font-medium transition-colors disabled:opacity-50"
-          >
-            {isExecuting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4 text-green-400" />}
-            Run
-          </button>
-          <button 
-            onClick={handleSubmit}
-            disabled={isExecuting}
-            className="flex items-center gap-2 px-4 py-1.5 rounded-md bg-primary text-primary-foreground hover:bg-blue-600 text-sm font-medium transition-colors disabled:opacity-50"
-          >
-            <Send className="w-4 h-4" /> Submit
-          </button>
+        <div className="flex items-center gap-6">
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={handleRunCode}
+              disabled={isExecuting}
+              className="flex items-center gap-2 px-4 py-1.5 rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/80 text-sm font-medium transition-colors disabled:opacity-50"
+            >
+              {isExecuting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4 text-green-400" />}
+              Run
+            </button>
+            <button 
+              onClick={handleSubmit}
+              disabled={isExecuting}
+              className="flex items-center gap-2 px-6 py-1.5 rounded-md bg-primary text-primary-foreground hover:bg-blue-600 text-sm font-bold transition-all hover:scale-105 active:scale-95 disabled:opacity-50 shadow-lg shadow-primary/20"
+            >
+              <Send className="w-4 h-4" /> Submit
+            </button>
+          </div>
+          {user ? (
+            <div className="flex items-center gap-3 border-l border-white/10 pl-6">
+              <div className="flex flex-col items-end hidden sm:flex">
+                <span className="text-xs font-bold text-white leading-none">{user.displayName || 'Developer'}</span>
+                <span className="text-[10px] text-muted-foreground">Pro Member</span>
+              </div>
+              <div className="w-8 h-8 rounded-full bg-primary/20 border border-primary/40 flex items-center justify-center text-primary text-xs font-bold ring-2 ring-primary/10">
+                {user.displayName?.charAt(0) || user.email?.charAt(0).toUpperCase() || 'U'}
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center gap-4 border-l border-white/10 pl-6">
+              <Link href="/login" className="text-xs font-bold text-muted-foreground hover:text-white transition-colors">Sign In</Link>
+            </div>
+          )}
         </div>
       </header>
 
@@ -295,22 +319,29 @@ export default function ProblemSolvingPage() {
                             Test Case {idx + 1}: {res.passed ? 'Passed' : 'Failed'}
                           </span>
                         </div>
-                        <div className="p-4 space-y-3">
-                          <div>
-                            <div className="text-[10px] text-muted-foreground uppercase font-bold mb-1">Input</div>
-                            <div className="bg-background/50 p-2 rounded text-xs font-mono border border-white/5">{res.input}</div>
-                          </div>
-                          <div className="grid grid-cols-2 gap-4">
+                        {res.passed ? (
+                          <div className="p-4 space-y-3">
                             <div>
-                              <div className="text-[10px] text-muted-foreground uppercase font-bold mb-1">Expected</div>
-                              <div className="bg-background/50 p-2 rounded text-xs font-mono border border-white/5 text-green-400/80">{res.expected}</div>
+                              <div className="text-[10px] text-muted-foreground uppercase font-bold mb-1">Input</div>
+                              <div className="bg-background/50 p-2 rounded text-xs font-mono border border-white/5">{res.input}</div>
                             </div>
-                            <div>
-                              <div className="text-[10px] text-muted-foreground uppercase font-bold mb-1">Actual</div>
-                              <div className="bg-background/50 p-2 rounded text-xs font-mono border border-white/5 text-foreground">{res.actual}</div>
+                            <div className="grid grid-cols-2 gap-4">
+                              <div>
+                                <div className="text-[10px] text-muted-foreground uppercase font-bold mb-1">Expected</div>
+                                <div className="bg-background/50 p-2 rounded text-xs font-mono border border-white/5 text-green-400/80">{res.expected}</div>
+                              </div>
+                              <div>
+                                <div className="text-[10px] text-muted-foreground uppercase font-bold mb-1">Actual</div>
+                                <div className="bg-background/50 p-2 rounded text-xs font-mono border border-white/5 text-foreground">{res.actual}</div>
+                              </div>
                             </div>
                           </div>
-                        </div>
+                        ) : (
+                          <div className="p-4 flex items-center justify-center gap-2 text-red-400 bg-red-500/5">
+                            <AlertCircle className="w-4 h-4" />
+                            <span className="text-xs font-medium">Results hidden for failed test case. Correct your solution to see output.</span>
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
