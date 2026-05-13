@@ -47,13 +47,21 @@ router.get('/', async (req, res) => {
     // Sort by points descending
     rankings.sort((a, b) => b.points - a.points);
 
+    const { userId } = req.query;
+
     // Add rank index
     const rankedWithRank = rankings.map((user, index) => ({
       ...user,
       rank: index + 1
     }));
 
-    res.json(rankedWithRank);
+    // Find specific user's rank if userId is provided
+    const myRank = userId ? rankedWithRank.find(u => u.id === userId) : null;
+
+    res.json({
+      rankings: rankedWithRank,
+      myRank
+    });
   } catch (error: any) {
     console.error('[Leaderboard API Error]:', error.message);
     res.status(500).json({ error: 'Failed to fetch leaderboard' });

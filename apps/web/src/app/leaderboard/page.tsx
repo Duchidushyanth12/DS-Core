@@ -3,19 +3,34 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Code2, Trophy, Medal, Crown, Loader2, Search, Users } from 'lucide-react';
 import { API_URL } from '@/lib/api';
+import { auth } from '@/lib/firebase';
+import { onAuthStateChanged } from 'firebase/auth';
 
 export default function LeaderboardPage() {
   const [users, setUsers] = useState<any[]>([]);
+  const [myRank, setMyRank] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [userId, setUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setUserId(user ? user.uid : null);
+    });
+    return () => unsubscribe();
+  }, []);
 
   useEffect(() => {
     async function fetchLeaderboard() {
       try {
-        const response = await fetch(`${API_URL}/api/leaderboard`);
+        const url = new URL(`${API_URL}/api/leaderboard`);
+        if (userId) url.searchParams.append('userId', userId);
+
+        const response = await fetch(url.toString());
         if (!response.ok) throw new Error("API error");
         const data = await response.json();
-        setUsers(Array.isArray(data) ? data : []);
+        setUsers(Array.isArray(data.rankings) ? data.rankings : []);
+        setMyRank(data.myRank);
       } catch (error) {
         setUsers([]);
       } finally {
@@ -23,26 +38,14 @@ export default function LeaderboardPage() {
       }
     }
     fetchLeaderboard();
-  }, []);
+  }, [userId]);
 
   const filteredUsers = users.filter(u =>
-    u.username.toLowerCase().includes(searchTerm.toLowerCase())
+    u.username?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
     <div className="min-h-screen bg-background p-8 pt-24">
-      <header className="glass fixed top-0 left-0 w-full z-50 flex items-center justify-between px-8 py-4">
-        <Link href="/" className="flex items-center gap-2">
-          <Code2 className="w-6 h-6 text-blue-500" />
-          <span className="text-xl font-bold tracking-tight text-white">DS-corE</span>
-        </Link>
-        <nav className="flex items-center gap-6">
-          <Link href="/problems" className="text-sm font-medium hover:text-primary transition-colors">Problems</Link>
-          <Link href="/patterns" className="text-sm font-medium hover:text-primary transition-colors">Patterns</Link>
-          <Link href="/leaderboard" className="text-sm font-medium text-primary">Leaderboard</Link>
-        </nav>
-      </header>
-
       <main className="max-w-5xl mx-auto">
         <div className="text-center mb-16">
           <div className="inline-flex items-center justify-center p-3 rounded-full bg-yellow-500/10 text-yellow-500 mb-6">
@@ -146,6 +149,36 @@ export default function LeaderboardPage() {
                 </tbody>
               </table>
             </div>
+
+            {/* My Rank Sticky Bar */}
+            {myRank && (
+              <div className="fixed bottom-8 left-1/2 -translate-x-1/2 w-full max-w-4xl px-4 z-40">
+                <div className="glass bg-primary/20 backdrop-blur-xl border border-primary/40 rounded-full p-4 flex items-center justify-between shadow-[0_0_50px_-12px_rgba(59,130,246,0.5)]">
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center font-bold text-white">
+                      #{myRank.rank}
+                    </div>
+                    <div>
+                      <div className="text-xs uppercase font-black text-primary/80">Your Rank</div>
+                      <div className="font-bold text-white">{myRank.username}</div>
+                    </div>
+                  </div>
+                  <div className="flex gap-8 px-6">
+                    <div className="text-center">
+                      <div className="text-xs uppercase font-black text-primary/80">Solved</div>
+                      <div className="font-bold text-white">{myRank.solved}</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-xs uppercase font-black text-primary/80">Points</div>
+                      <div className="font-bold text-white">{myRank.points.toLocaleString()}</div>
+                    </div>
+                  </div>
+                  <Link href="/patterns" className="bg-primary text-white text-xs font-bold px-6 py-2 rounded-full hover:bg-blue-600 transition-colors">
+                    CLIMB HIGHER
+                  </Link>
+                </div>
+              </div>
+            )}
           </>
         )}
       </main>

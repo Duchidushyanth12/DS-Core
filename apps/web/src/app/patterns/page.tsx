@@ -51,14 +51,29 @@ const domainIcons: Record<string, any> = {
   "System Design": Monitor
 };
 
+import { auth } from '@/lib/firebase';
+import { onAuthStateChanged } from 'firebase/auth';
+
 export default function PatternsPage() {
   const [patterns, setPatterns] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [userId, setUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setUserId(user ? user.uid : null);
+    });
+    return () => unsubscribe();
+  }, []);
 
   useEffect(() => {
     async function fetchPatterns() {
+      setIsLoading(true);
       try {
-        const response = await fetch(`${API_URL}/api/patterns`);
+        const url = new URL(`${API_URL}/api/patterns`);
+        if (userId) url.searchParams.append('userId', userId);
+
+        const response = await fetch(url.toString());
         if (!response.ok) throw new Error("API unreachable");
         const data = await response.json();
         setPatterns(Array.isArray(data) ? data : []);
@@ -70,23 +85,10 @@ export default function PatternsPage() {
     }
     
     fetchPatterns();
-  }, []);
+  }, [userId]);
 
   return (
     <div className="min-h-screen bg-background p-8 pt-24">
-      <header className="glass fixed top-0 left-0 w-full z-50 flex items-center justify-between px-8 py-4">
-        <Link href="/" className="flex items-center gap-2">
-          <Code2 className="w-6 h-6 text-blue-500" />
-          <span className="text-xl font-bold tracking-tight text-white">DS-corE</span>
-        </Link>
-        <nav className="flex items-center gap-6">
-          <Link href="/problems" className="text-sm font-medium hover:text-primary transition-colors">Problems</Link>
-          <Link href="/patterns" className="text-sm font-medium text-primary">Patterns</Link>
-          <Link href="/leaderboard" className="text-sm font-medium hover:text-primary transition-colors">Leaderboard</Link>
-        </nav>
-      </header>
-
-      <main className="max-w-7xl mx-auto">
         <div className="mb-12">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-bold uppercase tracking-wider mb-4">
             <Zap className="w-3 h-3" /> Sequential Learning Active
@@ -178,7 +180,6 @@ export default function PatternsPage() {
             })
           )}
         </div>
-      </main>
     </div>
   );
 }

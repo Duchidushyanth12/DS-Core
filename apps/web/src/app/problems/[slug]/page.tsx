@@ -5,6 +5,9 @@ import Link from 'next/link';
 import { Play, Send, Code2, Loader2, ChevronLeft, CheckCircle2, AlertCircle } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import { API_URL } from '@/lib/api';
+import confetti from 'canvas-confetti';
+import { auth } from '@/lib/firebase';
+import { onAuthStateChanged } from 'firebase/auth';
 
 export default function ProblemSolvingPage() {
   const params = useParams();
@@ -32,6 +35,21 @@ export default function ProblemSolvingPage() {
   const [isExecuting, setIsExecuting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
+
+  const DEFAULT_BOILERPLATE: Record<string, string> = {
+    javascript: `function solution() {\n  // Your code here\n  console.log("Hello World");\n}`,
+    python: `def solution():\n    # Your code here\n    print("Hello World")`,
+    java: `public class Solution {\n    public static void main(String[] args) {\n        // Your code here\n        System.out.println("Hello World");\n    }\n}`,
+    cpp: `#include <iostream>\n\nint main() {\n    // Your code here\n    std::cout << "Hello World" << std::endl;\n    return 0;\n}`
+  };
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setUserId(user ? user.uid : null);
+    });
+    return () => unsubscribe();
+  }, []);
 
   useEffect(() => {
     async function fetchProblem() {
@@ -59,9 +77,17 @@ export default function ProblemSolvingPage() {
 
   useEffect(() => {
     if (problem && !code) {
-      setCode(`function solution() {\n  // Your code for ${problem.title}\n  console.log("Hello World");\n}`);
+      setCode(DEFAULT_BOILERPLATE[language]);
     }
-  }, [problem, code]);
+  }, [problem]);
+
+  useEffect(() => {
+    // Update boilerplate when language changes, but ONLY if the editor is empty or still has default boilerplate
+    const currentBoilerplates = Object.values(DEFAULT_BOILERPLATE);
+    if (!code || currentBoilerplates.includes(code.trim())) {
+      setCode(DEFAULT_BOILERPLATE[language]);
+    }
+  }, [language]);
 
   const handleRunCode = async () => {
     if (!problem) return;
@@ -73,6 +99,7 @@ export default function ProblemSolvingPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           problemId: problem.id,
+          userId: userId || 'anonymous',
           language,
           code
         })
@@ -80,14 +107,25 @@ export default function ProblemSolvingPage() {
       if (!response.ok) throw new Error("API Unreachable");
       const result = await response.json();
       
-      setOutput({
+      const newOutput = {
         status: result.status,
         executionTime: result.executionTime || 0,
         memoryUsed: result.memoryUsed || 0,
         results: result.results || [
           { passed: result.status === 'ACCEPTED', input: 'Hidden', expected: 'Hidden', actual: result.status }
         ]
-      });
+      };
+
+      setOutput(newOutput);
+
+      if (result.status === 'ACCEPTED') {
+        confetti({
+          particleCount: 150,
+          spread: 70,
+          origin: { y: 0.6 },
+          colors: ['#22c55e', '#3b82f6', '#ffffff']
+        });
+      }
     } catch (err) {
       console.error("Execution API failed:", err);
       setError("Execution failed. Backend might be disconnected.");
@@ -98,7 +136,6 @@ export default function ProblemSolvingPage() {
 
   const handleSubmit = async () => {
     await handleRunCode();
-    // In a real app, we might have different UI for submit vs run
   };
 
   if (isLoading) return (

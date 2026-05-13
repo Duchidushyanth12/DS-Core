@@ -8,20 +8,6 @@ export default function Home() {
       <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-blue-600/20 blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-purple-600/20 blur-[120px] pointer-events-none" />
 
-      <header className="glass fixed top-0 w-full z-50 flex items-center justify-between px-8 py-4">
-        <div className="flex items-center gap-2">
-          <Code2 className="w-8 h-8 text-blue-500" />
-          <span className="text-xl font-bold tracking-tight text-white">DS-corE</span>
-        </div>
-        <nav className="flex items-center gap-6 text-sm font-medium text-muted-foreground">
-          <Link href="/problems" className="hover:text-foreground transition-colors">Problems</Link>
-          <Link href="/patterns" className="hover:text-foreground transition-colors">Patterns</Link>
-          <Link href="/leaderboard" className="hover:text-foreground transition-colors">Leaderboard</Link>
-          <div className="h-4 w-px bg-border mx-2" />
-          <Link href="/login" className="hover:text-foreground transition-colors">Sign In</Link>
-          <Link href="/signup" className="bg-primary text-primary-foreground px-4 py-2 rounded-md hover:bg-blue-600 transition-colors">Get Started</Link>
-        </nav>
-      </header>
 
       <main className="pt-32 pb-16 px-8 flex flex-col items-center justify-center min-h-screen text-center">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 text-blue-400 text-sm font-medium mb-8 border border-blue-500/20">

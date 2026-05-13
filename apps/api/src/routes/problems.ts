@@ -3,10 +3,10 @@ import { prisma } from 'database';
 
 const router = Router();
 
-// Get all problems (with optional pattern filter)
+// Get all problems (with optional pattern filter and user progress)
 router.get('/', async (req, res) => {
   try {
-    const { patternId } = req.query;
+    const { patternId, userId } = req.query;
     const where = patternId ? { patternId: String(patternId) } : {};
     
     const problems = await prisma.problem.findMany({
@@ -18,11 +18,26 @@ router.get('/', async (req, res) => {
         difficulty: true,
         pattern: {
           select: { name: true }
-        }
+        },
+        submissions: userId ? {
+          where: { 
+            userId: String(userId),
+            status: 'ACCEPTED'
+          },
+          take: 1
+        } : false
       }
     });
-    res.json(problems);
+
+    const problemsWithStatus = problems.map(p => ({
+      ...p,
+      isSolved: p.submissions && p.submissions.length > 0,
+      submissions: undefined // Clean up
+    }));
+
+    res.json(problemsWithStatus);
   } catch (error) {
+    console.error('[Problems API Error]:', error);
     res.status(500).json({ error: 'Failed to fetch problems' });
   }
 });
