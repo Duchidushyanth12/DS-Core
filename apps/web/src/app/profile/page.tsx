@@ -1,12 +1,11 @@
 'use client';
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { auth } from '@/lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import { API_URL } from '@/lib/api';
 import { 
   User as UserIcon, 
-  Github, 
-  Linkedin, 
   Mail, 
   Calendar, 
   Edit2, 
@@ -16,7 +15,9 @@ import {
   Trophy,
   History,
   TrendingUp,
-  MapPin
+  MapPin,
+  Globe,
+  Link2
 } from 'lucide-react';
 
 export default function ProfilePage() {
@@ -187,12 +188,12 @@ export default function ProfilePage() {
                   <>
                     {profile?.githubUrl && (
                       <a href={profile.githubUrl} target="_blank" className="p-2 glass hover:bg-white/10 rounded-lg transition-colors">
-                        <Github className="w-5 h-5" />
+                        <Globe className="w-5 h-5" />
                       </a>
                     )}
                     {profile?.linkedinUrl && (
                       <a href={profile.linkedinUrl} target="_blank" className="p-2 glass hover:bg-white/10 rounded-lg transition-colors">
-                        <Linkedin className="w-5 h-5 text-blue-400" />
+                        <Link2 className="w-5 h-5 text-blue-400" />
                       </a>
                     )}
                   </>
