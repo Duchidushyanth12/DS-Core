@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { auth } from '@/lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import { API_URL } from '@/lib/api';
@@ -40,8 +41,19 @@ export default function ProfilePage() {
     const unsubscribe = onAuthStateChanged(auth, (authUser) => {
       if (authUser) {
         setUser(authUser);
+        localStorage.removeItem('manual-logout');
+        fetchProfile();
+      } else if (process.env.NODE_ENV === 'development' && localStorage.getItem('manual-logout') !== 'true') {
+        // Local dev bypass
+        const mockUser = { 
+          uid: 'local-test-user', 
+          email: 'test@example.com', 
+          displayName: 'Test User' 
+        };
+        setUser(mockUser);
         fetchProfile();
       } else {
+        setUser(null);
         setIsLoading(false);
       }
     });
@@ -50,9 +62,10 @@ export default function ProfilePage() {
 
   async function fetchProfile() {
     try {
+      const token = auth.currentUser ? await auth.currentUser.getIdToken() : 'mock-token';
       const response = await fetch(`${API_URL}/api/profile`, {
         headers: {
-          'Authorization': `Bearer ${await auth.currentUser?.getIdToken()}`
+          'Authorization': `Bearer ${token}`
         }
       });
       const data = await response.json();
@@ -74,11 +87,12 @@ export default function ProfilePage() {
   async function handleSave() {
     setIsSaving(true);
     try {
+      const token = auth.currentUser ? await auth.currentUser.getIdToken() : 'mock-token';
       const response = await fetch(`${API_URL}/api/profile`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${await auth.currentUser?.getIdToken()}`
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify(formData)
       });
@@ -117,7 +131,13 @@ export default function ProfilePage() {
             <div className="relative mb-6">
               <div className="w-32 h-32 rounded-full bg-primary/20 border-2 border-primary/40 flex items-center justify-center text-4xl font-bold text-primary overflow-hidden">
                 {formData.photoURL ? (
-                  <img src={formData.photoURL} alt={formData.username} className="w-full h-full object-cover" />
+                  <Image 
+                    src={formData.photoURL} 
+                    alt={formData.username} 
+                    width={128} 
+                    height={128} 
+                    className="w-full h-full object-cover" 
+                  />
                 ) : (
                   formData.username?.charAt(0) || user.email?.charAt(0).toUpperCase()
                 )}

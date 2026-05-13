@@ -46,10 +46,11 @@ router.put('/', requireAuth, async (req, res) => {
       where: { firebaseUid },
       data: {
         username,
-        bio,
-        photoURL,
-        githubUrl,
-        linkedinUrl
+        // @ts-ignore
+        bio: bio || null,
+        photoURL: photoURL || null,
+        githubUrl: githubUrl || null,
+        linkedinUrl: linkedinUrl || null
       }
     });
 

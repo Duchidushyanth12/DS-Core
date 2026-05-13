@@ -48,8 +48,22 @@ export default function ProblemSolvingPage() {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (authUser) => {
-      setUserId(authUser ? authUser.uid : null);
-      setUser(authUser);
+      if (authUser) {
+        setUserId(authUser.uid);
+        setUser(authUser);
+        localStorage.removeItem('manual-logout');
+      } else if (process.env.NODE_ENV === 'development' && localStorage.getItem('manual-logout') !== 'true') {
+        const mockUser = { 
+          uid: 'local-test-user', 
+          email: 'test@example.com', 
+          displayName: 'Test User' 
+        };
+        setUserId(mockUser.uid);
+        setUser(mockUser);
+      } else {
+        setUserId(null);
+        setUser(null);
+      }
     });
     return () => unsubscribe();
   }, []);

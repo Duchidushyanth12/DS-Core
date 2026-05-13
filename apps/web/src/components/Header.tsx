@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { User, LogOut, LayoutDashboard } from 'lucide-react';
 import { auth } from '@/lib/firebase';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
+import Image from 'next/image';
 import Logo from './Logo';
 
 export default function Header() {
@@ -13,13 +14,29 @@ export default function Header() {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (authUser) => {
-      setUser(authUser);
+      if (authUser) {
+        setUser(authUser);
+        localStorage.removeItem('manual-logout');
+      } else if (process.env.NODE_ENV === 'development' && localStorage.getItem('manual-logout') !== 'true') {
+        // Local dev bypass: use mock user if no real user and not manually logged out
+        setUser({ 
+          uid: 'local-test-user', 
+          email: 'test@example.com', 
+          displayName: 'Test User' 
+        });
+      } else {
+        setUser(null);
+      }
     });
     return () => unsubscribe();
   }, []);
 
   const handleSignOut = () => {
+    if (process.env.NODE_ENV === 'development') {
+      localStorage.setItem('manual-logout', 'true');
+    }
     signOut(auth);
+    setUser(null);
   };
 
   if (pathname === '/login' || pathname === '/signup' || pathname.startsWith('/problems/')) return null;
@@ -77,7 +94,13 @@ export default function Header() {
               title="View Profile"
             >
               {user.photoURL ? (
-                <img src={user.photoURL} alt="Profile" className="w-full h-full object-cover" />
+                <Image 
+                  src={user.photoURL} 
+                  alt="Profile" 
+                  width={40} 
+                  height={40} 
+                  className="w-full h-full object-cover" 
+                />
               ) : (
                 user.displayName?.charAt(0) || user.email?.charAt(0).toUpperCase() || 'U'
               )}

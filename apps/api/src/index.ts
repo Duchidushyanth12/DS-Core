@@ -16,12 +16,16 @@ app.use(cors({
 }));
 app.use(express.json());
 
+app.get('/ping', (req, res) => {
+  res.json({ message: 'pong' });
+});
+
 app.get('/health', async (req, res) => {
   try {
-    // Check database connection
     await prisma.$queryRaw`SELECT 1`;
     res.json({ status: 'ok', db: 'connected' });
   } catch (error) {
+    console.error('Health check failed:', error);
     res.status(500).json({ status: 'error', db: 'disconnected' });
   }
 });
@@ -39,7 +43,6 @@ app.use('/api/submissions', submissionsRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/leaderboard', leaderboardRouter);
 app.use('/api/profile', profileRouter);
-
 
 app.listen(port, () => {
   console.log(`API Server running on port ${port}`);

@@ -61,7 +61,14 @@ export default function PatternsPage() {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUserId(user ? user.uid : null);
+      if (user) {
+        setUserId(user.uid);
+        localStorage.removeItem('manual-logout');
+      } else if (process.env.NODE_ENV === 'development' && localStorage.getItem('manual-logout') !== 'true') {
+        setUserId('local-test-user');
+      } else {
+        setUserId(null);
+      }
     });
     return () => unsubscribe();
   }, []);
