@@ -2,12 +2,13 @@
 import { useState, useEffect } from 'react';
 import Editor from '@monaco-editor/react';
 import Link from 'next/link';
-import { Play, Send, Code2, Loader2, ChevronLeft, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Play, Send, Loader2, ChevronLeft, CheckCircle2, AlertCircle } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import { API_URL } from '@/lib/api';
 import confetti from 'canvas-confetti';
 import { auth } from '@/lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
+import Logo from '@/components/Logo';
 
 export default function ProblemSolvingPage() {
   const params = useParams();
@@ -165,9 +166,8 @@ export default function ProblemSolvingPage() {
           <Link href="/problems" className="hover:bg-white/5 p-1 rounded-md transition-colors">
             <ChevronLeft className="w-5 h-5 text-muted-foreground" />
           </Link>
-          <Link href="/" className="flex items-center gap-2">
-            <Code2 className="w-5 h-5 text-blue-500" />
-            <span className="font-bold text-sm text-white">DS-corE</span>
+          <Link href="/" className="hover:opacity-80 transition-opacity">
+            <Logo size={32} />
           </Link>
           <div className="h-4 w-px bg-border" />
           <h1 className="font-semibold text-sm">{problem.title}</h1>

@@ -2,9 +2,10 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Code2, Mail, Lock, User, ArrowRight, Loader2, CheckCircle2 } from 'lucide-react';
+import { Mail, Lock, User, ArrowRight, Loader2, CheckCircle2 } from 'lucide-react';
 import { auth, googleProvider, githubProvider, signInWithPopup } from '@/lib/firebase';
 import { API_URL } from '@/lib/api';
+import Logo from '@/components/Logo';
 
 export default function SignupPage() {
   const [isLoading, setIsLoading] = useState(false);
@@ -58,9 +59,8 @@ export default function SignupPage() {
       <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-purple-600/10 blur-[120px] pointer-events-none" />
 
       <header className="fixed top-0 w-full p-8">
-        <Link href="/" className="flex items-center gap-2">
-          <Code2 className="w-8 h-8 text-blue-500" />
-          <span className="text-xl font-bold tracking-tight text-white">DS-corE</span>
+        <Link href="/">
+          <Logo size={42} />
         </Link>
       </header>
 

@@ -2,9 +2,10 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Code2, User, LogOut, LayoutDashboard } from 'lucide-react';
+import { User, LogOut, LayoutDashboard } from 'lucide-react';
 import { auth } from '@/lib/firebase';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
+import Logo from './Logo';
 
 export default function Header() {
   const [user, setUser] = useState<any>(null);
@@ -30,11 +31,10 @@ export default function Header() {
   ];
 
   return (
-    <header className="glass fixed top-0 left-0 w-full z-50 flex items-center justify-between px-8 py-4">
+    <header className="glass fixed top-0 left-0 w-full z-50 flex items-center justify-between px-8 py-3">
       <div className="flex items-center gap-8">
-        <Link href="/" className="flex items-center gap-2">
-          <Code2 className="w-8 h-8 text-blue-500" />
-          <span className="text-xl font-bold tracking-tight text-white">DS-corE</span>
+        <Link href="/" className="hover:opacity-80 transition-opacity">
+          <Logo size={42} />
         </Link>
         <nav className="hidden md:flex items-center gap-6">
           {navLinks.map((link) => (

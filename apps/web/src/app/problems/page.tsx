@@ -2,10 +2,11 @@
 import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { Search, Filter, Code2, ChevronRight, Loader2, CheckCircle2 } from 'lucide-react';
+import { Search, Filter, ChevronRight, Loader2, CheckCircle2 } from 'lucide-react';
 import { API_URL } from '@/lib/api';
 import { auth } from '@/lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
+import Logo from '@/components/Logo';
 
 function ProblemsContent() {
   const searchParams = useSearchParams();
@@ -158,8 +159,8 @@ function ProblemsContent() {
           </>
         ) : (
           <div className="flex flex-col items-center justify-center py-20 text-center">
-            <div className="bg-white/5 p-6 rounded-full mb-4">
-              <Code2 className="w-12 h-12 text-muted-foreground" />
+            <div className="mb-4">
+              <Logo size={80} showText={false} />
             </div>
             <h3 className="text-xl font-bold mb-2">No problems found</h3>
             <p className="text-muted-foreground">Try adjusting your search or filter.</p>

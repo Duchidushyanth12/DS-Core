@@ -4,10 +4,10 @@ import {
   Building2,
   ChartNoAxesColumn,
   CheckCircle2,
-  Code2,
   ShieldCheck,
   Users,
 } from 'lucide-react';
+import Logo from '@/components/Logo';
 
 const benefits = [
   {
@@ -43,10 +43,9 @@ export default function ClientPage() {
       <div className="absolute top-[-12%] left-[-8%] h-[30rem] w-[30rem] rounded-full bg-cyan-500/15 blur-[140px] pointer-events-none" />
       <div className="absolute bottom-[-12%] right-[-8%] h-[28rem] w-[28rem] rounded-full bg-blue-600/15 blur-[140px] pointer-events-none" />
 
-      <header className="glass fixed top-0 left-0 z-50 flex w-full items-center justify-between px-8 py-4">
-        <Link href="/" className="flex items-center gap-2">
-          <Code2 className="h-8 w-8 text-blue-500" />
-          <span className="text-xl font-bold tracking-tight text-white">DS-corE</span>
+      <header className="glass fixed top-0 left-0 z-50 flex w-full items-center justify-between px-8 py-3">
+        <Link href="/" className="hover:opacity-80 transition-opacity">
+          <Logo size={42} />
         </Link>
         <nav className="flex items-center gap-6 text-sm font-medium text-muted-foreground">
           <Link href="/problems" className="hover:text-foreground transition-colors">
